@@ -1,4 +1,7 @@
-backend/node_modules/
-backend/.env
-backend/dist/
+# === Backend ===
+/backend/node_modules/
+/backend/dist/
+/backend/.env
+
+# === OS/Editor Files ===
 .DS_Store
