@@ -1,0 +1,9 @@
+{
+  "name": "lynkhold-backend",
+  "version": "1.0.0",
+  "prettier": {
+    "semi": true,
+    "singleQuote": true,
+    "tabWidth": 10
+  }
+}
