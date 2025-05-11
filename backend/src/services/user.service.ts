@@ -2,6 +2,7 @@ import { User } from "../models/user.model";
 import { LoginInput, RegisterInput, UpdateInput } from "../schemas/user.schema";
 import { hashPassword, verifyPassword } from "../utils/bcrypt";
 import { generateToken } from "../config/jwt";
+import { IUserResponse } from "../interfaces/user.interface";
 
 // Creates a new user with hashed password
 export async function registerUser(requestInput: RegisterInput["body"]) {
@@ -37,7 +38,7 @@ export async function registerUser(requestInput: RegisterInput["body"]) {
       lastName: user.lastName,
       email: user.email,
       createdAt: user.createdAt,
-    },
+    } as IUserResponse,
     token: token,
   };
 }
@@ -75,7 +76,7 @@ export async function loginUser(requestInput: LoginInput["body"]) {
       lastName: user.lastName,
       email: user.email,
       createdAt: user.createdAt,
-    },
+    } as IUserResponse,
     token: token,
   };
 }
@@ -99,7 +100,8 @@ export async function getUser(requestInput: string) {
       lastName: user.lastName,
       email: user.email,
       createdAt: user.createdAt,
-    },
+      updatedAt: user.updatedAt,
+    } as IUserResponse,
   };
 }
 
@@ -133,7 +135,7 @@ export async function updateUser(
       email: updatedUser.email,
       createdAt: updatedUser.createdAt,
       updatedAt: updatedUser.updatedAt,
-    },
+    } as IUserResponse,
   };
 }
 
@@ -161,7 +163,8 @@ export async function deleteUser(userId: string, userIdfromAuth: string) {
       lastName: user.lastName,
       email: user.email,
       createdAt: user.createdAt,
-    },
+      updatedAt: user.updatedAt,
+    } as IUserResponse,
     deletedUser: deletedUser,
   };
 }
