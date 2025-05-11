@@ -1,4 +1,4 @@
-import { string, z } from "zod";
+import { z } from "zod";
 
 // Schema for user registration validation
 export const registerSchema = z.object({
@@ -20,18 +20,18 @@ export const loginSchema = z.object({
 
 // Schema for user updatation validation
 export const updateSchema = z.object({
+  _id: z.string(),
   body: z.object({
     firstname: z.string().optional(),
     lastName: z.string().optional(),
     email: z.string().email().optional(),
   }),
-  _id: string(),
 });
 
 // Schema for user extraction validation
 export const deleteSchema = z.object({
   body: z.object({
-    _id: string(),
+    _id: z.string(),
   }),
 });
 
