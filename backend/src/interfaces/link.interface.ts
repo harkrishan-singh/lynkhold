@@ -3,8 +3,8 @@ import { Document, Types } from "mongoose";
 // Link document interface for MongoDB (includes all fields stored in DB)
 export interface ILink extends Document {
   title: string;
-  type: string;
-  link: LinkType;
+  type: LinkType;
+  link: string;
   tags: Types.ObjectId[];
   userId: Types.ObjectId;
   createdAt?: Date;

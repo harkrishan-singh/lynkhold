@@ -1,9 +1,9 @@
 import express from "express";
-import userRouter from "./routes/user.routes";
 import { connectDB } from "./config/db";
 import { PORT } from "./utils/env";
+import userRouter from "./routes/user.routes";
+import linkRouter from "./routes/link.routes";
 import tagRouter from "./routes/tag.routes";
-// import linkRouter from "./routes/link.routes";
 
 // Create Express application instance
 const app = express();
@@ -25,10 +25,11 @@ app.get("/", (req, res) => {
 // Importing user routes using userRouter
 app.use("/api/user", userRouter);
 
+// Importing link routes using linkRouter
+app.use("/api/link", linkRouter);
+
 // Importing tag routes using tagRouter
 app.use("/api/tag", tagRouter);
-
-// app.use("/api/link", linkRouter);
 
 // Start server on specified port
 app.listen(port, () => {

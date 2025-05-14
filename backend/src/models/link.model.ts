@@ -19,14 +19,20 @@ export const LinkSchema = new Schema<ILink>(
       trim: true,
     },
     tags: {
-      type: Array,
+      type: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: "Tag", // assuming you have a Tag model
+        },
+      ],
       required: false,
       lowercase: true, // Store tags in lowercase
     },
     userId: {
-      type: Types.ObjectId,
+      type: Schema.Types.ObjectId,
       required: true,
       trim: true,
+      ref: "User",
     },
   },
   {
