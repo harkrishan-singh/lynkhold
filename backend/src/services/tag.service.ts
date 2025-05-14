@@ -2,19 +2,25 @@ import { ITagResponse } from "../interfaces/tag.interface";
 import { Tag } from "../models/tag.model";
 import { CreateTagInput } from "../schemas/tag.schema";
 
+// Creates a new tag after checking for duplicates
 async function createTag(requestInput: CreateTagInput["body"]) {
   const tagInput = requestInput.tag;
   const alreadyExists = await Tag.findOne({
     tag: tagInput,
   });
+
   if (alreadyExists) {
     throw new Error("Tag already exists!");
   }
+
+  // Create and save new tag
   const createdTag = await Tag.create({
     tag: tagInput,
   });
   await createdTag.save();
+
   console.log("Tag created successfully!");
+
   return {
     tag: {
       _id: createdTag._id,
