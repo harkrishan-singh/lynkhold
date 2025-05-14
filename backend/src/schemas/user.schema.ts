@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // Schema for user registration validation
-export const registerSchema = z.object({
+export const registerUserSchema = z.object({
   body: z.object({
     firstName: z.string(),
     lastName: z.string(),
@@ -11,7 +11,7 @@ export const registerSchema = z.object({
 });
 
 // Schema for user login validation
-export const loginSchema = z.object({
+export const loginUserSchema = z.object({
   body: z.object({
     email: z.string().email(),
     password: z.string().min(8),
@@ -19,7 +19,7 @@ export const loginSchema = z.object({
 });
 
 // Schema for user updatation validation
-export const updateSchema = z.object({
+export const updateUserSchema = z.object({
   _id: z.string(),
   body: z.object({
     firstname: z.string().optional(),
@@ -29,14 +29,14 @@ export const updateSchema = z.object({
 });
 
 // Schema for user extraction validation
-export const deleteSchema = z.object({
+export const deleteUserSchema = z.object({
   body: z.object({
     _id: z.string(),
   }),
 });
 
 // Type definitions inferred from schemas
-export type RegisterInput = z.infer<typeof registerSchema>;
-export type LoginInput = z.infer<typeof loginSchema>;
-export type UpdateInput = z.infer<typeof updateSchema>;
-export type DeleteInput = z.infer<typeof deleteSchema>;
+export type RegisterUserInput = z.infer<typeof registerUserSchema>;
+export type LoginUserInput = z.infer<typeof loginUserSchema>;
+export type UpdateUserInput = z.infer<typeof updateUserSchema>;
+export type DeleteInput = z.infer<typeof deleteUserSchema>;

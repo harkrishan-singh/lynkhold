@@ -1,11 +1,15 @@
 import { User } from "../models/user.model";
-import { LoginInput, RegisterInput, UpdateInput } from "../schemas/user.schema";
+import {
+  RegisterUserInput,
+  LoginUserInput,
+  UpdateUserInput,
+} from "../schemas/user.schema";
 import { hashPassword, verifyPassword } from "../utils/bcrypt";
 import { generateToken } from "../config/jwt";
 import { IUserResponse } from "../interfaces/user.interface";
 
 // Creates a new user with hashed password
-export async function registerUser(requestInput: RegisterInput["body"]) {
+export async function registerUser(requestInput: RegisterUserInput["body"]) {
   const { firstName, lastName, email, password } = requestInput;
 
   // Check for existing user with same email
@@ -44,7 +48,7 @@ export async function registerUser(requestInput: RegisterInput["body"]) {
 }
 
 // Authenticates user and returns JWT token
-export async function loginUser(requestInput: LoginInput["body"]) {
+export async function loginUser(requestInput: LoginUserInput["body"]) {
   const { email, password } = requestInput;
 
   // Find user including password field (normally excluded)
@@ -107,9 +111,9 @@ export async function getUser(requestInput: string) {
 
 // Updates user information after verifying ownership
 export async function updateUser(
-  requestInput: UpdateInput["body"],
-  userId: UpdateInput["_id"],
+  userId: UpdateUserInput["_id"],
   userIdfromAuth: string,
+  requestInput: UpdateUserInput["body"],
 ) {
   // Verify requesting user owns the account being modified
   if (userId !== userIdfromAuth) {

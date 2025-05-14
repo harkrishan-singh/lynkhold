@@ -11,7 +11,7 @@ const typeOptions = [
 ] as const;
 
 // Schema for creating a new link with required fields
-export const createLink = z.object({
+export const createLinkSchema = z.object({
   _id: z.string(),
   body: z.object({
     title: z.string(),
@@ -22,7 +22,7 @@ export const createLink = z.object({
 });
 
 // Schema for fetching a single link by ID
-export const getOneLink = z.object({
+export const getOneLinkSchema = z.object({
   _id: z.string(),
   body: z.object({
     _id: z.string(),
@@ -30,12 +30,12 @@ export const getOneLink = z.object({
 });
 
 // Schema for fetching all links (only requires user ID)
-export const getAllLinks = z.object({
+export const getAllLinksSchema = z.object({
   _id: z.string(),
 });
 
 // Schema for updating a link (same fields as create but all optional)
-export const updateLink = z.object({
+export const updateLinkSchema = z.object({
   _id: z.string(),
   body: z.object({
     title: z.string().optional(),
@@ -46,7 +46,7 @@ export const updateLink = z.object({
 });
 
 // Schema for deleting a single link by ID
-export const deleteOneLink = z.object({
+export const deleteOneLinkSchema = z.object({
   _id: z.string(),
   body: z.object({
     _id: z.string(),
@@ -54,16 +54,16 @@ export const deleteOneLink = z.object({
 });
 
 // Schema for deleting all links for a user
-export const deleteAllLinks = z.object({
+export const deleteAllLinksSchema = z.object({
   _id: z.string(),
 });
 
 // Type definitions inferred from schemas
-export type CreateLinkInput = z.infer<typeof createLink>;
-export type GetOneLinkInput = z.infer<typeof getOneLink>;
-export type GetAllLinksInput = z.infer<typeof getAllLinks>;
-export type UpdateLinkInput = z.infer<typeof updateLink>;
-export type DeleteLinkInput = z.infer<typeof deleteOneLink>;
-export type DeleteAllLinksInput = z.infer<typeof deleteAllLinks>;
+export type CreateLinkInput = z.infer<typeof createLinkSchema>;
+export type GetOneLinkInput = z.infer<typeof getOneLinkSchema>;
+export type GetAllLinksInput = z.infer<typeof getAllLinksSchema>;
+export type UpdateLinkInput = z.infer<typeof updateLinkSchema>;
+export type DeleteLinkInput = z.infer<typeof deleteOneLinkSchema>;
+export type DeleteAllLinksInput = z.infer<typeof deleteAllLinksSchema>;
 
 // TODO: Enhance schemas with custom error messages for validation
