@@ -1,55 +1,239 @@
+import { Types } from "mongoose";
 import { ILinkResponse } from "../interfaces/link.interface";
-import { IUserResponse } from "../interfaces/user.interface";
 import { Link } from "../models/link.model";
-import { Tag } from "../models/tag.model";
 import { User } from "../models/user.model";
-import { CreateLinkInput } from "../schemas/link.schema";
+import {
+  CreateLinkInput,
+  DeleteAllLinksInput,
+  DeleteLinkInput,
+  GetOneLinkInput,
+} from "../schemas/link.schema";
+import { TagService } from "./tag.service";
 
 export async function createLink(
-  userId: CreateLinkInput["_id"],
+  userId: string,
   requestInput: CreateLinkInput["body"],
 ) {
-  //   // Check if user exists using the userId (this id is received from a auth middleware which got it by verifing a token)
-  //   const user = await User.findById(userId);
-  //   if (!user) {
-  //     throw new Error("User doesn't exist in the system!");
-  //   }
-  //   const { title, type, link, tagNames } = requestInput;
-  //   const tags = [];
-  //   tagNames.forEach((tagName) => {
-  //     if (!(await Tag.find({ tag: tagName.lowercase }))) {
-  //       const tag = tags.push(tag);
-  //     }
-  //   });
-  //   const createdLink = await Link.create({
-  //     title,
-  //     type,
-  //     link,
-  //     tags,
-  //     userId: user._id,
-  //   });
-  //   await createdLink.save();
-  //   console.log("Link created!");
-  //   return {
-  //     user: {
-  //       _id: user._id,
-  //       firstName: user.firstName,
-  //       lastName: user.lastName,
-  //       email: user.email,
-  //     } as IUserResponse,
-  //     link: {
-  //       _id: createdLink._id,
-  //       title: createdLink.title,
-  //       type: createdLink.type,
-  //       link: createdLink.link,
-  //       tags: createdLink.tags,
-  //       userId: createdLink.userId,
-  //       createdAt: createdLink.createdAt,
-  //       updatedAt: createdLink.updatedAt,
-  //     } as ILinkResponse,
-  //   };
+  // Check if user exists using the userId (this id is received from a auth middleware which got it by verifing a token)
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new Error("User doesn't exist in the system!");
+  }
+
+  const { title, type, link, tags: tagNames } = requestInput;
+
+  // Handle tags - simpler approach
+  const tags: Types.ObjectId[] = [];
+
+  if (tagNames && tagNames.length > 0) {
+    for (const tagName of tagNames) {
+      try {
+        const tag = await TagService.getTagUsingName(
+          user._id as string,
+          tagName,
+        );
+        if (tag) {
+          tags.push(tag.tag._id);
+        }
+      } catch (error: any) {
+        if (error.message === "Tag doesn't exist!") {
+          const newTag = await TagService.createTag(user._id as string, {
+            tag: tagName,
+          });
+          tags.push(newTag.tag._id);
+        }
+      }
+    }
+  }
+
+  const createdLink = await Link.create({
+    title,
+    type,
+    link,
+    tags,
+    userId: user._id,
+  });
+  await createdLink.save();
+  console.log("Link created!");
+  return {
+    link: {
+      _id: createdLink._id,
+      title: createdLink.title,
+      type: createdLink.type,
+      link: createdLink.link,
+      tags: tagNames,
+      user: {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+      },
+      createdAt: createdLink.createdAt,
+      updatedAt: createdLink.updatedAt,
+    } as ILinkResponse,
+  };
+}
+
+export async function getOneLink(
+  userId: string,
+  requestInput: GetOneLinkInput["_id"],
+) {
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new Error("Unauthorized request. User doesn't exist!");
+  }
+
+  const linkId = requestInput;
+
+  const link = await Link.findById(linkId);
+
+  if (!link) {
+    throw new Error("Link doesn't exist!");
+  }
+
+  if (userId != link.userId.toString()) {
+    throw new Error("Unauthorized request. This link doesn't belong to you!");
+  }
+
+  const tagNames: string[] = [];
+
+  if (link.tags && link.tags.length > 0) {
+    for (const tag of link.tags) {
+      const tagName = (
+        await TagService.getTagUsingId(userId, tag._id.toString())
+      ).tag.tag;
+      tagNames.push(tagName);
+    }
+  }
+
+  //   const tagNames = link.tags.map((tag) => tag.toString());
+
+  console.log("Link fetched!");
+
+  return {
+    link: {
+      _id: link._id,
+      title: link.title,
+      type: link.type,
+      link: link.link,
+      tags: tagNames,
+      user: {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+      },
+      createdAt: link.createdAt,
+      updatedAt: link.updatedAt,
+    } as ILinkResponse,
+  };
+}
+
+export async function getAllLinks(userId: string) {
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new Error("Unauthorized request. User doesn't exist!");
+  }
+
+  const links = await Link.find({ userId: userId });
+
+  console.log("Links fetched!");
+
+  return {
+    links: links,
+  };
+}
+
+export async function deleteLink(
+  userId: string,
+  requestInput: DeleteLinkInput["_id"],
+) {
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new Error("Unauthorized request. User doesn't exist!");
+  }
+
+  const linkId = requestInput;
+
+  const link = await Link.findById(linkId);
+
+  if (!link) {
+    throw new Error("Link doesn't exist!");
+  }
+
+  if (userId != link.userId.toString()) {
+    throw new Error("Unauthorized request. This link doesn't belong to you!");
+  }
+
+  const deletedLink = await Link.findByIdAndDelete(linkId);
+
+  if (!deletedLink) {
+    throw new Error("Failed to delete link");
+  }
+
+  console.log("Link deleted!");
+
+  // Convert ObjectId tags to string tags if needed
+  const tags = deletedLink.tags.map((tag) => tag.toString());
+
+  return {
+    link: {
+      _id: deletedLink._id,
+      title: deletedLink.title,
+      type: deletedLink.type,
+      link: deletedLink.link,
+      tags: tags,
+      user: {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+      },
+      createdAt: deletedLink.createdAt,
+      updatedAt: deletedLink.updatedAt,
+    } as ILinkResponse,
+  };
+}
+
+export async function deleteAllLinks(
+  userIdFromAuth: string,
+  requestInput: DeleteAllLinksInput["body"],
+) {
+  const userId = requestInput._id;
+
+  console.log("userIdFromAuth:", userIdFromAuth);
+  console.log("userId:", userId);
+
+  if (userId === userIdFromAuth) {
+    throw new Error("Unauthozied request. User validation failed!");
+  }
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new Error("Unauthorized request. User doesn't exist!");
+  }
+
+  const deletdLinks = await Link.deleteMany({ userId: user._id });
+
+  if (deletdLinks.deletedCount == 0) {
+    throw new Error("No links to delete!");
+  }
+
+  console.log("All links deleted!");
+
+  return {
+    deletedLinks: deletdLinks,
+  };
 }
 
 export const LinkServices = {
   createLink,
+  getOneLink,
+  getAllLinks,
+  deleteLink,
+  deleteAllLinks,
 };
