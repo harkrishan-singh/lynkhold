@@ -47,11 +47,31 @@ export const deleteAllLinksSchema = z.object({
   }),
 });
 
+// Schema for fetching all links using selected type for a user
+export const getSelectedTypeLinksSchema = z.object({
+  body: z.object({
+    type: z.string().toUpperCase(),
+  }),
+});
+
+// Schema for fetching all links using selected tag for a user
+export const getSelectedTagLinksSchema = z.object({
+  body: z.object({
+    tag: z.string().toLowerCase(),
+  }),
+});
+
 // Type definitions inferred from schemas
 export type CreateLinkInput = z.infer<typeof createLinkSchema>;
 export type GetOneLinkInput = z.infer<typeof getOneLinkSchema>;
 export type UpdateLinkInput = z.infer<typeof updateLinkSchema>;
 export type DeleteLinkInput = z.infer<typeof deleteOneLinkSchema>;
 export type DeleteAllLinksInput = z.infer<typeof deleteAllLinksSchema>;
+export type GetSelectedTypeLinksInput = z.infer<
+  typeof getSelectedTypeLinksSchema
+>;
+export type GetSelectedTagLinksInput = z.infer<
+  typeof getSelectedTagLinksSchema
+>;
 
 // TODO: Enhance schemas with custom error messages for validation
