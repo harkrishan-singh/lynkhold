@@ -8,6 +8,7 @@ import { userAuth } from "../middleware/auth.middleware";
 import { validate } from "../middleware/validate.middleware";
 import { createTagSchema } from "../schemas/tag.schema";
 
+// Create main router for tag-related endpoints
 const tagRouter = Router();
 
 // Route for creating tags with schema validation and auth

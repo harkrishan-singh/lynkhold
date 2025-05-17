@@ -1,10 +1,13 @@
 import { Request, Response } from "express";
 import { LinkServices } from "../services/link.service";
 
+// Handles link creation requests (requires authenticated user)
 export const createLink = async (req: Request, res: Response) => {
   try {
-    // @ts-ignore
+    // @ts-ignore - Get user ID from authenticated request
     const userIdFromAuth = req.user._id.toString();
+
+    // Create new link using service
     const createdLink = await LinkServices.createLink(userIdFromAuth, req.body);
 
     res.status(200).json({
@@ -19,11 +22,16 @@ export const createLink = async (req: Request, res: Response) => {
   }
 };
 
+// Fetches one link details (requires authenticated user)
 export const getOneLink = async (req: Request, res: Response) => {
   try {
-    // @ts-ignore
+    // @ts-ignore - Extract user ID from auth middleware
     const userId = req.user._id;
-    const fetchedLink = await LinkServices.getOneLink(userId, req.params.id);
+    const linkId = req.params.id; // Getting the link _id from the parameters
+
+    // Fetch single link by ID using service
+    const fetchedLink = await LinkServices.getOneLink(userId, linkId);
+
     res.status(200).json({
       message: "Link fetched successfully!",
       info: fetchedLink,
@@ -36,11 +44,15 @@ export const getOneLink = async (req: Request, res: Response) => {
   }
 };
 
+// Fetches all user links details (requires authenticated user)
 export const getAllLinks = async (req: Request, res: Response) => {
   try {
-    // @ts-ignore
+    // @ts-ignore - Extract user ID from auth middleware
     const userId = req.user._id;
+
+    // Fetch all links belonging to user
     const fetchedLinks = await LinkServices.getAllLinks(userId);
+
     res.status(200).json({
       message: "Links fetched successfully!",
       info: fetchedLinks,
@@ -53,12 +65,16 @@ export const getAllLinks = async (req: Request, res: Response) => {
   }
 };
 
+// Deletes one link (requires authenticated user)
 export const deleteLink = async (req: Request, res: Response) => {
   try {
-    // @ts-ignore
+    // @ts-ignore - Extract user ID from auth middleware
     const userId = req.user._id;
-    const linkId = req.params.id;
+    const linkId = req.params.id; // Getting the link _id from the parameters
+
+    // Delete specific link using service
     const deletedLink = await LinkServices.deleteLink(userId, linkId);
+
     res.status(200).json({
       message: "Link deleted!",
       info: deletedLink,
@@ -71,15 +87,19 @@ export const deleteLink = async (req: Request, res: Response) => {
   }
 };
 
+// Deletes all user links (requires authenticated user)
 export const deleteAllLinks = async (req: Request, res: Response) => {
   try {
-    // @ts-ignore
+    // @ts-ignore - Extract user ID from auth middleware
     const userIdFromAuth = req.user._id;
-    const userId = req.body;
+    const userId = req.body; // Getting the user _id in the body
+
+    // Delete all links associated with user
     const deletedLinks = await LinkServices.deleteAllLinks(
       userIdFromAuth,
       userId,
     );
+
     res.status(200).json({
       message: "Link deleted!",
       info: deletedLinks,

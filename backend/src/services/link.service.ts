@@ -10,11 +10,12 @@ import {
 } from "../schemas/link.schema";
 import { TagService } from "./tag.service";
 
+// Creates a new link for authenticated user
 export async function createLink(
   userId: string,
   requestInput: CreateLinkInput["body"],
 ) {
-  // Check if user exists using the userId (this id is received from a auth middleware which got it by verifing a token)
+  // Verify requesting user exists in database
   const user = await User.findById(userId);
 
   if (!user) {
@@ -23,7 +24,7 @@ export async function createLink(
 
   const { title, type, link, tags: tagNames } = requestInput;
 
-  // Handle tags - simpler approach
+  // Process tags - create new ones if they don't exist
   const tags: Types.ObjectId[] = [];
 
   if (tagNames && tagNames.length > 0) {
@@ -47,6 +48,7 @@ export async function createLink(
     }
   }
 
+  // Create and save new link document
   const createdLink = await Link.create({
     title,
     type,
@@ -59,6 +61,7 @@ export async function createLink(
 
   console.log("Link created!");
 
+  // Fetch complete link data with populated references
   const fetchedLink = await Link.findById(createdLink._id)
     .populate({
       path: "tags",
@@ -89,6 +92,7 @@ export async function createLink(
   };
 }
 
+// Retrieves a single link with authorization check
 export async function getOneLink(
   userId: string,
   requestInput: GetOneLinkInput["_id"],
@@ -101,7 +105,7 @@ export async function getOneLink(
 
   const linkId = requestInput;
 
-  // Find link with populated tags and user data in a single query
+  // Get link with populated data in single query
   const link = await Link.findById(linkId)
     .populate({
       path: "tags",
@@ -136,6 +140,7 @@ export async function getOneLink(
   };
 }
 
+// Gets all links for authenticated user
 export async function getAllLinks(userId: string) {
   const user = await User.findById(userId);
 
@@ -143,6 +148,7 @@ export async function getAllLinks(userId: string) {
     throw new Error("Unauthorized request. User doesn't exist!");
   }
 
+  // Fetch all user's links with populated data
   const links = await Link.find({ userId: userId })
     .populate({
       path: "tags",
@@ -160,6 +166,7 @@ export async function getAllLinks(userId: string) {
   };
 }
 
+// Deletes a specific link after authorization check
 export async function deleteLink(
   userId: string,
   requestInput: DeleteLinkInput["_id"],
@@ -182,6 +189,7 @@ export async function deleteLink(
     throw new Error("Unauthorized request. This link doesn't belong to you!");
   }
 
+  // Delete and return deleted document with populated data
   const deletedLink = await Link.findByIdAndDelete(linkId)
     .populate({
       path: "tags",
@@ -212,6 +220,7 @@ export async function deleteLink(
   };
 }
 
+// Deletes all links for a user after validation
 export async function deleteAllLinks(
   userIdFromAuth: string,
   requestInput: DeleteAllLinksInput["body"],
@@ -228,6 +237,7 @@ export async function deleteAllLinks(
     throw new Error("Unauthorized request. User doesn't exist!");
   }
 
+  // Delete all links belonging to user
   const deletdLinks = await Link.deleteMany({ userId: user._id });
 
   if (deletdLinks.deletedCount == 0) {
@@ -241,6 +251,7 @@ export async function deleteAllLinks(
   };
 }
 
+// Export all service methods
 export const LinkServices = {
   createLink,
   getOneLink,

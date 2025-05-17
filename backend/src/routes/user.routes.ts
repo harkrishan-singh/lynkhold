@@ -15,18 +15,27 @@ import {
   updateUser,
 } from "../controllers/user.controller";
 
-const userRouter = Router(); // Create Express router instance
+// Create router instance for user-related endpoints
+const userRouter = Router();
 
-// Define routes with their corresponding controllers
-userRouter.post("/register", validate(registerUserSchema), registerUser); // User registration route
-userRouter.get("/login", validate(loginUserSchema), loginUser); // User login route
-userRouter.get("/", userAuth, getUser); // Get user data (protected)
-userRouter.put("/update/:id", validate(updateUserSchema), userAuth, updateUser); // Update user (protected)
+// Register new user - validates request body against schema
+userRouter.post("/register", validate(registerUserSchema), registerUser);
+
+// User login - validates credentials against schema
+userRouter.get("/login", validate(loginUserSchema), loginUser);
+
+// Get user profile - requires authentication
+userRouter.get("/", userAuth, getUser);
+
+// Update user details - validates input and requires auth
+userRouter.put("/update/:id", validate(updateUserSchema), userAuth, updateUser);
+
+// Delete user account - validates request and requires auth
 userRouter.delete(
   "/delete/:id",
   validate(deleteUserSchema),
   userAuth,
   deleteUser,
-); // Delete user (protected)
+);
 
-export default userRouter; // Export the router
+export default userRouter;
