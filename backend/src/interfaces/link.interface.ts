@@ -17,13 +17,8 @@ export interface ILinkResponse {
   title: string;
   type: LinkType;
   link: string;
-  tags: string[];
-  user: {
-    _id: Types.ObjectId;
-    firstName: string;
-    lastName: string;
-    email: string;
-  };
+  tags: Types.ObjectId[];
+  user: Types.ObjectId;
   createdAt: Date;
   updatedA?: Date;
 }

@@ -54,23 +54,37 @@ export async function createLink(
     tags,
     userId: user._id,
   });
+
   await createdLink.save();
+
   console.log("Link created!");
+
+  const fetchedLink = await Link.findById(createdLink._id)
+    .populate({
+      path: "tags",
+      select: "tag", // Only get the 'tag' field
+    })
+    .populate({
+      path: "userId",
+      select: "firstName lastName email", // Only get needed user fields
+    });
+
+  if (!fetchedLink) {
+    throw new Error("Link doesn't exist!");
+  }
+
+  console.log("Link fetched!");
+
   return {
     link: {
-      _id: createdLink._id,
-      title: createdLink.title,
-      type: createdLink.type,
-      link: createdLink.link,
-      tags: tagNames,
-      user: {
-        _id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-      },
-      createdAt: createdLink.createdAt,
-      updatedAt: createdLink.updatedAt,
+      _id: fetchedLink._id,
+      title: fetchedLink.title,
+      type: fetchedLink.type,
+      link: fetchedLink.link,
+      tags: fetchedLink.tags,
+      user: fetchedLink.userId,
+      createdAt: fetchedLink.createdAt,
+      updatedAt: fetchedLink.updatedAt,
     } as ILinkResponse,
   };
 }
@@ -87,28 +101,24 @@ export async function getOneLink(
 
   const linkId = requestInput;
 
-  const link = await Link.findById(linkId);
+  // Find link with populated tags and user data in a single query
+  const link = await Link.findById(linkId)
+    .populate({
+      path: "tags",
+      select: "tag", // Only get the 'tag' field
+    })
+    .populate({
+      path: "userId",
+      select: "firstName lastName email", // Only get needed user fields
+    });
 
   if (!link) {
     throw new Error("Link doesn't exist!");
   }
 
-  if (userId != link.userId.toString()) {
+  if (userId != link.userId._id.toString()) {
     throw new Error("Unauthorized request. This link doesn't belong to you!");
   }
-
-  const tagNames: string[] = [];
-
-  if (link.tags && link.tags.length > 0) {
-    for (const tag of link.tags) {
-      const tagName = (
-        await TagService.getTagUsingId(userId, tag._id.toString())
-      ).tag.tag;
-      tagNames.push(tagName);
-    }
-  }
-
-  //   const tagNames = link.tags.map((tag) => tag.toString());
 
   console.log("Link fetched!");
 
@@ -118,13 +128,8 @@ export async function getOneLink(
       title: link.title,
       type: link.type,
       link: link.link,
-      tags: tagNames,
-      user: {
-        _id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-      },
+      tags: link.tags,
+      user: link.userId,
       createdAt: link.createdAt,
       updatedAt: link.updatedAt,
     } as ILinkResponse,
@@ -138,7 +143,15 @@ export async function getAllLinks(userId: string) {
     throw new Error("Unauthorized request. User doesn't exist!");
   }
 
-  const links = await Link.find({ userId: userId });
+  const links = await Link.find({ userId: userId })
+    .populate({
+      path: "tags",
+      select: "tag", // Only get the 'tag' field
+    })
+    .populate({
+      path: "userId",
+      select: "firstName lastName email", // Only get needed user fields
+    });
 
   console.log("Links fetched!");
 
@@ -169,7 +182,15 @@ export async function deleteLink(
     throw new Error("Unauthorized request. This link doesn't belong to you!");
   }
 
-  const deletedLink = await Link.findByIdAndDelete(linkId);
+  const deletedLink = await Link.findByIdAndDelete(linkId)
+    .populate({
+      path: "tags",
+      select: "tag", // Only get the 'tag' field
+    })
+    .populate({
+      path: "userId",
+      select: "firstName lastName email", // Only get needed user fields
+    });
 
   if (!deletedLink) {
     throw new Error("Failed to delete link");
@@ -177,22 +198,14 @@ export async function deleteLink(
 
   console.log("Link deleted!");
 
-  // Convert ObjectId tags to string tags if needed
-  const tags = deletedLink.tags.map((tag) => tag.toString());
-
   return {
     link: {
       _id: deletedLink._id,
       title: deletedLink.title,
       type: deletedLink.type,
       link: deletedLink.link,
-      tags: tags,
-      user: {
-        _id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-      },
+      tags: deletedLink.tags,
+      user: deletedLink.userId,
       createdAt: deletedLink.createdAt,
       updatedAt: deletedLink.updatedAt,
     } as ILinkResponse,
@@ -205,12 +218,10 @@ export async function deleteAllLinks(
 ) {
   const userId = requestInput._id;
 
-  console.log("userIdFromAuth:", userIdFromAuth);
-  console.log("userId:", userId);
-
   if (userId === userIdFromAuth) {
     throw new Error("Unauthozied request. User validation failed!");
   }
+
   const user = await User.findById(userId);
 
   if (!user) {
