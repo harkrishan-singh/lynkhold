@@ -111,3 +111,53 @@ export const deleteAllLinks = async (req: Request, res: Response) => {
     });
   }
 };
+
+// Fetches all user links details with a selected type (requires authenticated user)
+export const getSelectedTypeLinks = async (req: Request, res: Response) => {
+  try {
+    // @ts-ignore - Extract user ID from auth middleware
+    const userId = req.user._id;
+    const typeBody = req.body; // Getting the selected type in the body
+
+    // Fetches all links associated with user with the selected type
+    const fetchedLinks = await LinkServices.getSelectedTypeLinks(
+      userId,
+      typeBody,
+    );
+
+    res.status(200).json({
+      message: "Links fetched successfully!",
+      info: fetchedLinks,
+    });
+  } catch (err: any) {
+    res.status(400).json({
+      message: "Unable to fetch the links!",
+      error: err.message,
+    });
+  }
+};
+
+// Fetches all user links details with a selected tag (requires authenticated user)
+export const getSelectedTagLinks = async (req: Request, res: Response) => {
+  try {
+    // @ts-ignore - Extract user ID from auth middleware
+    const userId = req.user._id;
+    const tagBody = req.body; // Getting the selected type in the body
+
+    // Fetches all links associated with user with the selected tag
+    const fetchedLinks = await LinkServices.getSelectedTagLinks(
+      userId,
+      tagBody,
+    );
+
+    res.status(200).json({
+      message: "Links fetched successfully!",
+      info: fetchedLinks,
+    });
+  } catch (err: any) {
+    res.status(400).json({
+      message: "Unable to fetch the links!",
+      error: err.message,
+    });
+  }
+};

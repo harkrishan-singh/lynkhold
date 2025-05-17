@@ -7,6 +7,8 @@ import {
   DeleteAllLinksInput,
   DeleteLinkInput,
   GetOneLinkInput,
+  GetSelectedTagLinksInput,
+  GetSelectedTypeLinksInput,
 } from "../schemas/link.schema";
 import { TagService } from "./tag.service";
 
@@ -251,6 +253,78 @@ export async function deleteAllLinks(
   };
 }
 
+// Fetcehs all links for a user with a selected type values after validation
+export async function getSelectedTypeLinks(
+  userId: string,
+  requestInput: GetSelectedTypeLinksInput["body"],
+) {
+  // Verify requesting user exists in database
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new Error("User doesn't exist in the system!");
+  }
+
+  const type = requestInput.type.toUpperCase();
+
+  const links = await Link.find({
+    type: type, // Match links with the specified type
+  })
+    .populate({
+      path: "tags",
+      select: "tag",
+    })
+    .populate({
+      path: "userId",
+      select: "firstName lastName email",
+    });
+
+  console.log(links);
+
+  if (!links || links.length === 0) {
+    throw new Error(`No links found with type ${type}!`);
+  }
+
+  return {
+    links: links,
+  };
+}
+
+// Fetcehs all links for a user with a selected tag values after validation
+export async function getSelectedTagLinks(
+  userId: string,
+  requestInput: GetSelectedTagLinksInput["body"],
+) {
+  // Verify requesting user exists in database
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new Error("User doesn't exist in the system!");
+  }
+
+  const tagName = requestInput.tag.toLowerCase();
+
+  const links = await Link.find({
+    "tags.tag": tagName, // Match links where at least one tag has the specified tag name
+  })
+    .populate({
+      path: "tags",
+      select: "tag", // Only get the 'tag' field
+    })
+    .populate({
+      path: "userId",
+      select: "firstName lastName email", // Only get needed user fields
+    });
+
+  if (!links || links.length === 0) {
+    throw new Error(`No links founds with type ${tagName}!`);
+  }
+
+  return {
+    links: links,
+  };
+}
+
 // Export all service methods
 export const LinkServices = {
   createLink,
@@ -258,4 +332,6 @@ export const LinkServices = {
   getAllLinks,
   deleteLink,
   deleteAllLinks,
+  getSelectedTypeLinks,
+  getSelectedTagLinks,
 };
