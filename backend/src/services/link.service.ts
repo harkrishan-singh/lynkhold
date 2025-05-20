@@ -304,8 +304,10 @@ export async function getSelectedTagLinks(
 
   const tagName = requestInput.tag.toLowerCase();
 
+  const tag = await TagService.getTagUsingName(userId, tagName);
+
   const links = await Link.find({
-    "tags.tag": tagName, // Match links where at least one tag has the specified tag name
+    tags: tag.tag._id, // Match links where at least one tag has the specified tag name
   })
     .populate({
       path: "tags",
@@ -316,8 +318,10 @@ export async function getSelectedTagLinks(
       select: "firstName lastName email", // Only get needed user fields
     });
 
+  console.log(links);
+
   if (!links || links.length === 0) {
-    throw new Error(`No links founds with type ${tagName}!`);
+    throw new Error(`No links founds with tag ${tagName}!`);
   }
 
   return {

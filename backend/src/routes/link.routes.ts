@@ -28,7 +28,7 @@ linkRouter.get("/get/all", userAuth, getAllLinks);
 
 // Get all links for authenticated user with a specific type
 linkRouter.get(
-  "/get/type/abc",
+  "/get/type",
   validate(getSelectedTypeLinksSchema),
   userAuth,
   getSelectedTypeLinks,
